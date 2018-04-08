@@ -75,15 +75,9 @@ public class ServerRPC {
         this.port = envelope.youAre;
         ServerWrapper thisServer = ServerWrapper.getServer(this.port);
         if(this.port == envelope.recieverPort && !envelope.isResponse) {
-            System.out.println("Message received: " + envelope + " od serwera: " + envelope.senderPort);
-            ClientRPC client;
-            if(envelope.senderPort > this.port)
-                client = thisServer.rightClient;
-            else
-                client = thisServer.leftClient;
+            ClientRPC client = thisServer.rightClient;
 
             Envelope response;
-
             String pingPongMessage = pingPong(envelope.message);
             if((envelope.message.equals("PING") || envelope.message.equals("PONG") || envelope.message.equals("CUT_SHOT")) && pingPongMessage != null){
                 response = new Envelope(pingPongMessage, envelope.recieverPort, envelope.senderPort, client.port, false);
@@ -95,36 +89,22 @@ public class ServerRPC {
             try {
                 client.client.execute("mojserwer.message", arguments);
             } catch (Exception e){
-                e.printStackTrace();
+                System.out.println("Server " + client.port + " doesn't exist!");
             }
         } else if(envelope.isResponse && this.port == envelope.recieverPort){
             System.out.println("Response recieved, message: " + envelope.message + " delivered");
         }
         else {
-            if(this.port > envelope.recieverPort){
-                envelope = new Envelope(envelope.message, envelope.senderPort, envelope.recieverPort, thisServer.leftClient.port, envelope.isResponse);
-                Vector<Object> arguments = new Vector<>();
-                arguments.add(envelope.encode());
-                try {
-                    thisServer.leftClient.client.execute("mojserwer.message", arguments);
-                }
-                catch (Exception ex){
-                    ex.printStackTrace();
-                }
-                System.out.println("Forwarded the message: " + envelope.message + " to server: " + envelope.youAre);
+            envelope = new Envelope(envelope.message, envelope.senderPort, envelope.recieverPort, thisServer.rightClient.port, envelope.isResponse);
+            Vector<Object> arguments = new Vector<>();
+            arguments.add(envelope.encode());
+            try {
+                thisServer.rightClient.client.execute("mojserwer.message", arguments);
             }
-            else{
-                envelope = new Envelope(envelope.message, envelope.senderPort, envelope.recieverPort, thisServer.rightClient.port, envelope.isResponse);
-                Vector<Object> arguments = new Vector<>();
-                arguments.add(envelope.encode());
-                try {
-                    thisServer.rightClient.client.execute("mojserwer.message", arguments);
-                }
-                catch (Exception ex){
-                    ex.printStackTrace();
-                }
-                System.out.println("Forwarded the message: " + envelope.message + " to server: " + envelope.youAre);
+            catch (Exception ex){
+                System.out.println("Server " + thisServer.rightClient.port + " doesn't exist!");
             }
+            System.out.println("Forwarded the message: " + envelope.message + " to server: " + envelope.youAre);
         }
         return true;
     }
