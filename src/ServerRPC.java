@@ -1,8 +1,11 @@
 import org.apache.xmlrpc.WebServer;
 
+import java.util.Random;
 import java.util.Vector;
 
 public class ServerRPC {
+
+    public static final double K = 0.1;
 
     private int stan_konta;
 
@@ -54,14 +57,27 @@ public class ServerRPC {
         return false;
     }
 
+    private String pingPong(String message){
+        System.out.println(message);
+        double random = (new Random()).nextDouble();
+        if(message.equals("CUT_SHOT")){
+            return null;
+        }
+        else if(message.equals("PING"))
+            return random > ServerRPC.K ? "PONG" : "CUT_SHOT";
+        else if(message.equals("PONG"))
+            return random > ServerRPC.K ? "PING" : "CUT_SHOT";
+        return null;
+    }
+
     public boolean message(String message){
         Envelope envelope = new Envelope(message);
         this.port = envelope.youAre;
         ServerWrapper thisServer = ServerWrapper.getServer(this.port);
-        if(this.port == envelope.recieverPort) {
+        if(this.port == envelope.recieverPort && !envelope.isResponse) {
             System.out.println("Message received: " + envelope + " od serwera: " + envelope.senderPort);
 
-            Envelope response = new Envelope("Otrzymano wiadomosc " + envelope.message, envelope.recieverPort, envelope.senderPort, envelope.senderPort, null);
+            Envelope response = new Envelope("Otrzymano wiadomosc " + envelope.message, envelope.recieverPort, envelope.senderPort, envelope.senderPort, true);
             Vector<Object> arguments = new Vector<>();
             arguments.add(response.toString());
             ClientRPC client = new ClientRPC(envelope.senderPort - 8000);
@@ -70,18 +86,11 @@ public class ServerRPC {
             } catch (Exception e){
                 e.printStackTrace();
             }
-
-            if(envelope.message.equals("przelew") || envelope.message.equals("show") || envelope.message.equals("wplac") || envelope.message.equals("wyplac")){
-                try {
-                    thisServer.thisClient.client.execute("mojserwer." + envelope.message, arguments);
-                } catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
+        } else if(envelope.isResponse){
         }
-        else{
+        else {
             if(this.port > envelope.recieverPort){
-                envelope = new Envelope(envelope.message, envelope.senderPort, envelope.recieverPort, thisServer.leftClient.port, null);
+                envelope = new Envelope(envelope.message, envelope.senderPort, envelope.recieverPort, thisServer.leftClient.port, false);
                 Vector<Object> arguments = new Vector<>();
                 arguments.add(envelope.toString());
                 try {
@@ -93,7 +102,7 @@ public class ServerRPC {
                 System.out.println("Forwarded the message: " + envelope.message + " to server: " + envelope.youAre);
             }
             else{
-                envelope = new Envelope(envelope.message, envelope.senderPort, envelope.recieverPort, thisServer.rightClient.port, null);
+                envelope = new Envelope(envelope.message, envelope.senderPort, envelope.recieverPort, thisServer.rightClient.port, false);
                 Vector<Object> arguments = new Vector<>();
                 arguments.add(envelope.toString());
                 try {

@@ -35,7 +35,7 @@ public class Main {
                     int port = getInteger("Wpisz port odbiorcy", scanner);
                     Vector<Object> arguments = new Vector<>();
                     String message = getString("Wpisz wiadomosc: ", scanner);
-                    Envelope envelope = new Envelope(message, server.port, port, server.thisClient.port, null);
+                    Envelope envelope = new Envelope(message, server.port, port, server.thisClient.port, false);
                     arguments.add(envelope.toString());
                     server.thisClient.client.execute("mojserwer.message", arguments);
             }

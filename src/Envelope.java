@@ -6,14 +6,14 @@ public class Envelope {
     public int senderPort;
     public int recieverPort;
     public int youAre;
-    public Vector<Object> arguments;
+    public boolean isResponse;
 
-    public Envelope(String message, int sender, int reciever, int youAre, Vector<Object> arguments){
+    public Envelope(String message, int sender, int reciever, int youAre, boolean isResponse){
         this.message = message;
         this.senderPort = sender;
         this.recieverPort = reciever;
         this.youAre = youAre;
-        this.arguments = arguments;
+        this.isResponse = isResponse;
     }
 
     public Envelope(String encodedEnvelope){
@@ -22,10 +22,11 @@ public class Envelope {
         this.senderPort = Integer.parseInt(tab[1]);
         this.recieverPort = Integer.parseInt(tab[2]);
         this.youAre = Integer.parseInt(tab[3]);
+        this.isResponse = Boolean.parseBoolean(tab[4]);
     }
 
     @Override
     public String toString(){
-        return message + ':' + senderPort + ':' + recieverPort + ':' + youAre;
+        return message + ':' + senderPort + ':' + recieverPort + ':' + youAre + ":" + isResponse;
     }
 }
