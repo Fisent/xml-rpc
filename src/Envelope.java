@@ -25,8 +25,12 @@ public class Envelope {
         this.isResponse = Boolean.parseBoolean(tab[4]);
     }
 
+    public String encode(){
+        return message + ':' + senderPort + ':' + recieverPort + ':' + youAre + ":" + isResponse;
+    }
+
     @Override
     public String toString(){
-        return message + ':' + senderPort + ':' + recieverPort + ':' + youAre + ":" + isResponse;
+        return "Wiadomosc: " + message + ", od:" + senderPort + ", do:" + recieverPort + "(nastepny:" + youAre + ", odpowiedz:" + isResponse + ")";
     }
 }
